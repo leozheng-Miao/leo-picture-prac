@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yupi.yupicturebackend.exception.BusinessException;
 import com.yupi.yupicturebackend.exception.ErrorCode;
 import com.yupi.yupicturebackend.exception.ThrowUtils;
+import com.yupi.yupicturebackend.manager.CosManager;
 import com.yupi.yupicturebackend.manager.FileManager;
 import com.yupi.yupicturebackend.manager.upload.FilePictureUpload;
 import com.yupi.yupicturebackend.manager.upload.PictureUploadTemplate;
@@ -31,6 +32,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -62,6 +65,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
 
     @Resource
     private UrlPictureUpload urlPictureUpload;
+    @Autowired
+    private CosManager cosManager;
 
     @Override
     public void validPicture(Picture picture) {
@@ -136,6 +141,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         }
 
         boolean result = this.saveOrUpdate(picture);
+        // todo 可自行实现： 如果是更新，可以清理图片资源
+//        this.clearPictureFile(picture);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR, " 图片上传失败, 数据库操作失败 ");
         return PictureVO.objToVo(picture);
     }
@@ -360,6 +367,31 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
 
         return uploadCount;
 
+    }
+
+
+    // 这里的异步 需要 新开一个线程， 默认使用 SimpleAsyncTaskExecutor 线程池
+    // SimpleAsyncTaskExecutor 线程池， 每次都会新建一个线程， 不会重用线程
+    // 所以这个默认线程池 并不好， 因为每次都会新建一个线程池，会占用系统本身的默认线程池
+    @Async // 异步操作， 要在 启动类 添加 @EnableAsync 注解
+    @Override
+    public void clearPictureFile(Picture oldPicture) {
+        // 判断 该 图片 是否 为多条记录使用
+        String pictureUrl = oldPicture.getUrl();
+        Long count = this.lambdaQuery()
+                .eq(Picture::getUrl, pictureUrl)
+                .count();
+        // 如果有不止一条记录使用了该图片，则不清理
+        if (count > 1) {
+            return;
+        }
+        // 删除图片
+        cosManager.deleteObject(pictureUrl);
+        // 删除缩略图
+        String thumbnailUrl = oldPicture.getThumbnailUrl();
+        if (StrUtil.isNotBlank(thumbnailUrl)) {
+            cosManager.deleteObject(thumbnailUrl);
+        }
     }
 }
 
