@@ -14,6 +14,7 @@ import com.yupi.yupicturebackend.exception.BusinessException;
 import com.yupi.yupicturebackend.exception.ErrorCode;
 import com.yupi.yupicturebackend.manager.CosManager;
 import com.yupi.yupicturebackend.model.dto.file.UploadPictureResult;
+import com.yupi.yupicturebackend.utils.ColorTransformUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Resource;
@@ -76,7 +77,7 @@ public abstract class PictureUploadTemplate {
                     thumbnailCiObject = objectList.get(1);
                 }
                 // 封装压缩图的返回结果
-                return buildResult(originalFilename, compressedCiObject, thumbnailCiObject);
+                return buildResult(originalFilename, compressedCiObject, thumbnailCiObject, imageInfo);
 
             }
 
@@ -120,9 +121,10 @@ public abstract class PictureUploadTemplate {
      * @param originalFilename
      * @param compressedCiObject  压缩后的对象
      * @param thumbnailCiObject  缩略图对象
+     * @param imageInfo  图片信息
      * @return
      */
-    private UploadPictureResult buildResult(String originalFilename, CIObject compressedCiObject, CIObject thumbnailCiObject) {
+    private UploadPictureResult buildResult(String originalFilename, CIObject compressedCiObject, CIObject thumbnailCiObject, ImageInfo imageInfo) {
         int picWidth = compressedCiObject.getWidth();
         int picHeight = compressedCiObject.getHeight();
         double picScale = NumberUtil.round(picWidth * 1.0 / picHeight, 2).doubleValue();
@@ -137,6 +139,8 @@ public abstract class PictureUploadTemplate {
         uploadPictureResult.setPicHeight(picHeight);
         uploadPictureResult.setPicScale(picScale);
         uploadPictureResult.setPicFormat(compressedCiObject.getFormat());
+        System.out.println(imageInfo.getAve());
+        uploadPictureResult.setPicColor(ColorTransformUtils.normalizeColorSafe(imageInfo.getAve()));
         // 设置缩略图地址
         uploadPictureResult.setThumbnailUrl(cosClientConfig.getHost() + "/" + thumbnailCiObject.getKey());
         // 返回可访问的地址
@@ -168,6 +172,7 @@ public abstract class PictureUploadTemplate {
         uploadPictureResult.setPicHeight(picHeight);
         uploadPictureResult.setPicScale(picScale);
         uploadPictureResult.setPicFormat(imageInfo.getFormat());
+        uploadPictureResult.setPicColor(ColorTransformUtils.normalizeColorSafe(imageInfo.getAve()));
 
         // 返回可访问的地址
         return uploadPictureResult;

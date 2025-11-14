@@ -17,7 +17,9 @@
         <result property="picHeight" column="picHeight"/>
         <result property="picScale" column="picScale"/>
         <result property="picFormat" column="picFormat"/>
+        <result property="picColor" column="picColor"/>
         <result property="userId" column="userId"/>
+        <result property="spaceId" column="spaceId"/>
         <result property="createTime" column="createTime"/>
         <result property="editTime" column="editTime"/>
         <result property="updateTime" column="updateTime"/>
@@ -31,8 +33,37 @@
     <sql id="Base_Column_List">
         id
         ,url, thumbnailUrl, name,introduction,category,tags,
-        picSize,picWidth,picHeight,picScale,picFormat,
-        userId,createTime,editTime,updateTime,isDelete,
+        picSize,picWidth,picHeight,picScale,picFormat, picColor,
+        userId, spaceId, createTime,editTime,updateTime,isDelete,
         reviewStatus,reviewMessage,reviewerId,reviewTime
     </sql>
+
+    <select id="analyzeByTimeDimension" resultType="map">
+        SELECT
+        <choose>
+            <when test="params.timeDimension == 'day'">
+                DATE_FORMAT(createTime, '%Y-%m-%d') AS period,
+            </when>
+            <when test="params.timeDimension == 'week'">
+                YEARWEEK(createTime) AS period,
+            </when>
+            <when test="params.timeDimension == 'month'">
+                DATE_FORMAT(createTime, '%Y-%m') AS period,
+            </when>
+        </choose>
+        COUNT(*) AS count
+        FROM picture
+        WHERE isDelete = 0
+        <if test="params.queryAll != null and params.queryAll">
+        </if>
+        <if test="params.queryPublic != null and params.queryPublic">
+            AND spaceId IS NULL
+        </if>
+        <if test="params.spaceId != null">
+            AND spaceId = #{params.spaceId}
+        </if>
+        group by period
+        ORDER BY period
+    </select>
+
 </mapper>

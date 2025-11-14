@@ -52,4 +52,5 @@ public class UploadPictureResult {
      * 图片主色调
      */
     private String picColor;
+
 }

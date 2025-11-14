@@ -2,6 +2,11 @@ package com.yupi.yupicturebackend.mapper;
 
 import com.yupi.yupicturebackend.model.entity.Picture;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.MapKey;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author zhengsmacbook
@@ -10,6 +15,14 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @Entity com.yupi.yupicturebackend.model.entity.Picture
  */
 public interface PictureMapper extends BaseMapper<Picture> {
+
+    /**
+     * 查询分类统计信息
+     *
+     * @return 分类统计列表
+     */
+    @MapKey("period")
+    List<Map<String, Object>> analyzeByTimeDimension(@Param("params") Map<String, Object> params);
 
 }
 
