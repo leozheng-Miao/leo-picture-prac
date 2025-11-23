@@ -10,22 +10,19 @@ import cn.hutool.extra.servlet.ServletUtil;
 import cn.hutool.http.ContentType;
 import cn.hutool.http.Header;
 import cn.hutool.json.JSONUtil;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.yupi.yupicturebackend.exception.BusinessException;
-import com.yupi.yupicturebackend.exception.ErrorCode;
-import com.yupi.yupicturebackend.exception.ThrowUtils;
+import com.yupi.yupicture.infrastructure.exception.BusinessException;
+import com.yupi.yupicture.infrastructure.exception.ErrorCode;
 import com.yupi.yupicturebackend.manager.auth.model.SpaceUserPermissionConstant;
-import com.yupi.yupicturebackend.model.entity.Picture;
-import com.yupi.yupicturebackend.model.entity.Space;
-import com.yupi.yupicturebackend.model.entity.SpaceUser;
-import com.yupi.yupicturebackend.model.entity.User;
-import com.yupi.yupicturebackend.model.enums.SpaceRoleEnum;
-import com.yupi.yupicturebackend.model.enums.SpaceTypeEnum;
-import com.yupi.yupicturebackend.service.PictureService;
-import com.yupi.yupicturebackend.service.SpaceService;
-import com.yupi.yupicturebackend.service.SpaceUserService;
-import com.yupi.yupicturebackend.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.yupi.yupicture.domain.picture.entity.Picture;
+import com.yupi.yupicture.domain.space.entity.Space;
+import com.yupi.yupicture.domain.space.entity.SpaceUser;
+import com.yupi.yupicture.domain.user.entity.User;
+import com.yupi.yupicture.domain.space.valueobject.SpaceRoleEnum;
+import com.yupi.yupicture.domain.space.valueobject.SpaceTypeEnum;
+import com.yupi.yupicture.application.service.PictureApplicationService;
+import com.yupi.yupicture.application.service.SpaceApplicationService;
+import com.yupi.yupicture.application.service.SpaceUserApplicationService;
+import com.yupi.yupicture.application.service.UserApplicationService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -35,7 +32,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
-import static com.yupi.yupicturebackend.constant.UserConstant.USER_LOGIN_STATE;
+import static com.yupi.yupicture.domain.user.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
  * 自定义权限加载接口实现类
@@ -44,18 +41,18 @@ import static com.yupi.yupicturebackend.constant.UserConstant.USER_LOGIN_STATE;
 public class StpInterfaceImpl implements StpInterface {
 
     @Resource
-    private SpaceUserService spaceUserService;
+    private SpaceUserApplicationService spaceUserApplicationService;
 
     @Value("${server.servlet.context-path}")
     private String contextPath;
     @Resource
     private SpaceUserAuthManager spaceUserAuthManager;
     @Resource
-    private SpaceService spaceService;
+    private SpaceApplicationService spaceApplicationService;
     @Resource
-    private PictureService pictureService;
+    private PictureApplicationService pictureApplicationService;
     @Resource
-    private UserService userService;
+    private UserApplicationService userApplicationService;
 
     /**
      * 根据 loginId 获取权限列表
@@ -85,7 +82,7 @@ public class StpInterfaceImpl implements StpInterface {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "用户未登录");
         }
         // 校验管理员：若当前用户为管理员，则返回管理员权限
-        if (userService.isAdmin(loginUser)) {
+        if (loginUser.isAdmin()) {
             return ADMIN_PERMISSIONS;
         }
 
@@ -100,12 +97,12 @@ public class StpInterfaceImpl implements StpInterface {
         Long spaceUserId = authContext.getSpaceUserId();
         if (spaceUserId != null) {
             //  a. 根据 id 找到相对应的 SpaceUser 对象数据，若未找到抛出异常
-            spaceUser = spaceUserService.getById(spaceUserId);
+            spaceUser = spaceUserApplicationService.getById(spaceUserId);
             if (spaceUser == null) {
                 throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "未找到空间用户信息");
             }
             //  b. 校验当前用户是否属于当前空间，若不是，则返回空列表
-            SpaceUser loginSpaceUser = spaceUserService.lambdaQuery()
+            SpaceUser loginSpaceUser = spaceUserApplicationService.lambdaQuery()
                     .eq(SpaceUser::getSpaceId, spaceUser.getSpaceId())
                     .eq(SpaceUser::getUserId, userId)
                     .one();
@@ -124,7 +121,7 @@ public class StpInterfaceImpl implements StpInterface {
             if (pictureId == null) {
                 return ADMIN_PERMISSIONS;
             }
-            Picture picture = pictureService.lambdaQuery()
+            Picture picture = pictureApplicationService.lambdaQuery()
                     .eq(Picture::getId, pictureId)
                     .select(Picture::getId, Picture::getSpaceId, Picture::getUserId)
                     .one();
@@ -142,7 +139,7 @@ public class StpInterfaceImpl implements StpInterface {
             }
         }
         //8. 获取 Space 对象并判断空间类型： 查询 Space 信息，若为空则抛异常，否则根据空间类型进行权限判断：
-        Space space = spaceService.getById(spaceId);
+        Space space = spaceApplicationService.getById(spaceId);
         if (space == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "未找到空间信息");
         }
@@ -155,7 +152,7 @@ public class StpInterfaceImpl implements StpInterface {
             }
         } else {
             // 团队空间：查询登录用户在该空间的角色，并返回对应的权限码。若用户不属于该空间，则返回空列表
-            spaceUser = spaceUserService.lambdaQuery()
+            spaceUser = spaceUserApplicationService.lambdaQuery()
                     .eq(SpaceUser::getSpaceId, spaceId)
                     .eq(SpaceUser::getUserId, userId)
                     .one();

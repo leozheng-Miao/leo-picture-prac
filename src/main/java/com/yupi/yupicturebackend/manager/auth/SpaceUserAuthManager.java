@@ -6,13 +6,13 @@ import cn.hutool.json.JSONUtil;
 import com.yupi.yupicturebackend.manager.auth.model.SpaceUserAuthConfig;
 import com.yupi.yupicturebackend.manager.auth.model.SpaceUserPermissionConstant;
 import com.yupi.yupicturebackend.manager.auth.model.SpaceUserRole;
-import com.yupi.yupicturebackend.model.entity.Space;
-import com.yupi.yupicturebackend.model.entity.SpaceUser;
-import com.yupi.yupicturebackend.model.entity.User;
-import com.yupi.yupicturebackend.model.enums.SpaceRoleEnum;
-import com.yupi.yupicturebackend.model.enums.SpaceTypeEnum;
-import com.yupi.yupicturebackend.service.SpaceUserService;
-import com.yupi.yupicturebackend.service.UserService;
+import com.yupi.yupicture.domain.space.entity.Space;
+import com.yupi.yupicture.domain.space.entity.SpaceUser;
+import com.yupi.yupicture.domain.user.entity.User;
+import com.yupi.yupicture.domain.space.valueobject.SpaceRoleEnum;
+import com.yupi.yupicture.domain.space.valueobject.SpaceTypeEnum;
+import com.yupi.yupicture.application.service.SpaceUserApplicationService;
+import com.yupi.yupicture.application.service.UserApplicationService;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -32,9 +32,9 @@ public class SpaceUserAuthManager {
     public static final SpaceUserAuthConfig SPACE_USER_AUTH_CONFIG;
 
     @Resource
-    private UserService userService;
+    private UserApplicationService userApplicationService;
     @Resource
-    private SpaceUserService spaceUserService;
+    private SpaceUserApplicationService spaceUserApplicationService;
 
     static {
         String json = ResourceUtil.readUtf8Str("biz/spaceUserAuthConfig.json");
@@ -84,7 +84,7 @@ public class SpaceUserAuthManager {
 
         // 是否为公共图库
         if (space == null) {
-            if (userService.isAdmin(loginUser)) {
+            if (loginUser.isAdmin()) {
                 return ADMIN_PERMISSIONS;
             }
             return Collections.singletonList(SpaceUserPermissionConstant.PICTURE_VIEW);
@@ -97,7 +97,7 @@ public class SpaceUserAuthManager {
         //团队空间 还是 私有空间
         switch (spaceTypeEnum) {
             case TEAM:
-                SpaceUser spaceUser = spaceUserService.lambdaQuery()
+                SpaceUser spaceUser = spaceUserApplicationService.lambdaQuery()
                         .eq(SpaceUser::getSpaceId, space.getId())
                         .eq(SpaceUser::getUserId, loginUser.getId())
                         .one();
@@ -107,7 +107,7 @@ public class SpaceUserAuthManager {
                     return getPermissionsByRole(spaceUser.getSpaceRole());
                 }
             case PRIVATE:
-                if (userService.isAdmin(loginUser) || space.getUserId().equals(loginUser.getId())) {
+                if (loginUser.isAdmin() || space.getUserId().equals(loginUser.getId())) {
                     return ADMIN_PERMISSIONS;
                 } else {
                     return new ArrayList<>();

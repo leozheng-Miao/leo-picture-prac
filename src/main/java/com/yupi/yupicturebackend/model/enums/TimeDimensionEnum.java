@@ -1,7 +1,7 @@
 package com.yupi.yupicturebackend.model.enums;
 
-import com.yupi.yupicturebackend.exception.BusinessException;
-import com.yupi.yupicturebackend.exception.ErrorCode;
+import com.yupi.yupicture.infrastructure.exception.BusinessException;
+import com.yupi.yupicture.infrastructure.exception.ErrorCode;
 import lombok.Getter;
 import lombok.NonNull;
 
