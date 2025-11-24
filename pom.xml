@@ -170,11 +170,13 @@
                 <version>${spring-boot.version}</version>
                 <configuration>
                     <mainClass>com.yupi.yupicture.YuPictureApplication</mainClass>
-                    <skip>true</skip>
                 </configuration>
                 <executions>
                     <execution>
                         <id>repackage</id>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
