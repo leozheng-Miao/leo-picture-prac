@@ -13,7 +13,7 @@ import com.yupi.yupicture.domain.picture.entity.Picture;
 import com.yupi.yupicture.domain.space.entity.Space;
 import com.yupi.yupicture.domain.user.entity.User;
 import com.yupi.yupicture.interfaces.vo.space.analyze.*;
-import com.yupi.yupicturebackend.model.enums.TimeDimensionEnum;
+import com.yupi.yupicture.domain.space.valueobject.TimeDimensionEnum;
 import com.yupi.yupicture.application.service.PictureApplicationService;
 import com.yupi.yupicture.application.service.SpaceAnalyzeApplicationService;
 import com.yupi.yupicture.application.service.SpaceApplicationService;

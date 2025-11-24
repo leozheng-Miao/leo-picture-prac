@@ -16,7 +16,7 @@ import com.yupi.yupicture.infrastructure.exception.ErrorCode;
 import com.yupi.yupicture.interfaces.dto.user.UserQueryRequest;
 import com.yupi.yupicture.interfaces.vo.user.LoginUserVO;
 import com.yupi.yupicture.interfaces.vo.user.UserVO;
-import com.yupi.yupicturebackend.manager.auth.StpKit;
+import com.yupi.yupicture.share.auth.StpKit;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
