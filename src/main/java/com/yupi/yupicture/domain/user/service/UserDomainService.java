@@ -98,6 +98,14 @@ public interface UserDomainService{
      */
     QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest);
 
+    /**
+     * 用户兑换会员（会员码兑换）
+     * @param user
+     * @param vipCode
+     * @return
+     */
+    boolean exchangeVip(User user, String vipCode);
+
     Boolean removeById(Long id);
 
     boolean updateById(User user);

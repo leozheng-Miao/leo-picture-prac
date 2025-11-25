@@ -11,6 +11,7 @@ import com.yupi.yupicture.interfaces.dto.user.UserLoginRequest;
 import com.yupi.yupicture.interfaces.dto.user.UserQueryRequest;
 import com.yupi.yupicture.domain.user.entity.User;
 import com.yupi.yupicture.interfaces.dto.user.UserRegisterRequest;
+import com.yupi.yupicture.interfaces.dto.user.VipExchangeRequest;
 import com.yupi.yupicture.interfaces.vo.user.LoginUserVO;
 import com.yupi.yupicture.interfaces.vo.user.UserVO;
 import com.yupi.yupicture.application.service.UserApplicationService;
@@ -185,6 +186,12 @@ public class UserApplicationServiceImpl implements UserApplicationService {
         ThrowUtils.throwIf(!result, ErrorCode.PARAMS_ERROR, "添加失败");
         return user.getId();
     }
+
+    @Override
+    public boolean exchangeVip(User loginUser, VipExchangeRequest vipExchangeRequest) {
+        return userDomainService.exchangeVip(loginUser, vipExchangeRequest.getVipCode());
+    }
+
 
 }
 

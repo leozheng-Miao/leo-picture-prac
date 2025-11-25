@@ -7,6 +7,7 @@ import com.yupi.yupicture.interfaces.dto.user.UserLoginRequest;
 import com.yupi.yupicture.interfaces.dto.user.UserQueryRequest;
 import com.yupi.yupicture.domain.user.entity.User;
 import com.yupi.yupicture.interfaces.dto.user.UserRegisterRequest;
+import com.yupi.yupicture.interfaces.dto.user.VipExchangeRequest;
 import com.yupi.yupicture.interfaces.vo.user.LoginUserVO;
 import com.yupi.yupicture.interfaces.vo.user.UserVO;
 
@@ -111,4 +112,6 @@ public interface UserApplicationService {
     List<User> listByIds(Set<Long> userIdSet);
 
     Long saveUser(User user);
+
+    boolean exchangeVip(User loginUser, VipExchangeRequest vipExchangeRequest);
 }

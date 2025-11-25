@@ -183,5 +183,20 @@ public class UserController {
         return ResultUtils.success(userApplicationService.listUserVOByPage(userQueryRequest));
     }
 
+    /**
+     * 兑换会员
+     */
+    @PostMapping("/exchange/vip")
+    public BaseResponse<Boolean> exchangeVip(@RequestBody VipExchangeRequest vipExchangeRequest,
+                                             HttpServletRequest request) {
+        ThrowUtils.throwIf(vipExchangeRequest == null, ErrorCode.PARAMS_ERROR);
+        User loginUser = userApplicationService.getLoginUser(request);
+        return ResultUtils.success(userApplicationService.exchangeVip(loginUser, vipExchangeRequest));
+    }
+
+
+
+
+
 
 }
