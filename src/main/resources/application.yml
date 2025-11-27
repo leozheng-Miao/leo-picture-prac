@@ -54,7 +54,7 @@ spring:
             type: CLASS_BASED
             props:
               strategy: standard
-              algorithmClassName: com.yupi.yupicturebackend.manager.sharding.PictureShardingAlgorithm
+              algorithmClassName: com.yupi.yupicture.share.sharding.PictureShardingAlgorithm
     props:
       sql-show: true
 mybatis-plus:
@@ -80,7 +80,7 @@ knife4j:
       default:
         api-rule: package
         api-rule-resources:
-          - com.yupi.yupicturebackend.controller
+          - com.yupi.yupicture.interfaces.controller
 
 # 阿里云 AI配置
 aliYunAi:
